@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
 import Axios from "axios";
+import React, { useState, useEffect } from "react";
+import Button from "./Button/Button";
+import Input from "./Input/Input";
+import { MasterContainer, WordBox, TitleText, NavContainer, GridContainer, ReplayContainer } from "./style";
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 const DATAMUSE_SP_URL = "https://api.datamuse.com/words?sp=";
@@ -8,14 +11,19 @@ const DICTIONARY_KEY_URL = "?key=5c07b145-484a-4d9d-8678-ff785cd59333"
 const COLORS = {
   GREEN: "green",
   YELLOW: "yellow",
-  GRAY: "gray",
+  WHITE: "white",
 };
 
+interface CharacterBlock {
+  color: string;
+  letter: string;
+}
+
 const Game = () => {
-  const [goalWord, setGoalWord] = useState("");
-  const [input, setInput] = useState("");
-  const [inputs, setInputs] = useState<any[]>([]);
-  const [showPlayAgain, setShowPlayAgain] = useState(false);
+  const [goalWord, setGoalWord] = useState<string>("");
+  const [input, setInput] = useState<string>("");
+  const [inputs, setInputs] = useState<CharacterBlock[][]>([]);
+  const [showPlayAgain, setShowPlayAgain] = useState<boolean>(false);
 
   const getGoalWord = () => {
     onReset();
@@ -44,8 +52,9 @@ const Game = () => {
     setShowPlayAgain(false);
   };
 
-  const enterWord = async (event: any) => {
-    event.preventDefault();
+  const enterWord = async () => {
+    if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
+    // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
 
     const res = await checkWord(input);
@@ -54,12 +63,12 @@ const Game = () => {
       return
     }
 
-    const colorPattern: any[] = [];
+    const colorPattern: CharacterBlock[] = [];
 
     // compare input to goal
     for (let i = 0; i < 5; i++) {
       const currChar = input.charAt(i);
-      const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.GRAY;
+      const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.WHITE;
       colorPattern.push({
         letter: currChar,
         color,
@@ -95,41 +104,56 @@ const Game = () => {
   }, [showPlayAgain]);
 
   return (
-    <div
-      style={{
-        backgroundColor: "#282a35",
-        height: "100vh",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "space-between",
-        alignContent: "center",
-        flexDirection: "column",
-      }}
-    >
-      {inputs.map((colorPattern: any, index) => (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
+    <MasterContainer>
+      <NavContainer>
+        <TitleText>WORDLE V2</TitleText>
+      </NavContainer>
+
+      <GridContainer>
+        {inputs.map((colorPattern: CharacterBlock[], index) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+            }}
+            key={index}
+          >
+            {colorPattern.map((letter: CharacterBlock) => (
+              <WordBox>
+                <div style={{ color: letter.color }}>{letter.letter.toUpperCase()}</div>
+              </WordBox>
+            ))}
+          </div>
+        ))}
+      </GridContainer>
+
+      <Input
+        value={input}
+        onChange={(e) => {
+          setInput(e.target.value);
+        }}
+        placeholder="Enter word"
+        width="100%"
+      />
+
+      <Button
+        onClick={() => {
+          enterWord();
+        }}
+      >
+        Submit
+      </Button>
+
+      {showPlayAgain && (
+        <ReplayContainer
+          onClick={() => {
+            onReset();
           }}
-          key={index}
         >
-          {colorPattern.map((letter: any) => (
-            <h2 style={{ color: letter.color }}>{letter.letter}</h2>
-          ))}
-        </div>
-      ))}
-      <form onSubmit={enterWord}>
-        <input
-          value={input}
-          onChange={(e) => {
-            setInput(e.target.value);
-          }}
-        />
-      </form>
-      {showPlayAgain && <button onClick={onReset}>Play Again</button>}
-    </div>
+          Play Again
+        </ReplayContainer>
+      )}
+    </MasterContainer>
   );
 };
 
