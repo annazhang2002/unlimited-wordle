@@ -66,11 +66,11 @@ const Game = () => {
     // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
 
-    // const res = await checkWord(input);
-    // if (!res) {
-    //   setInput("");
-    //   return
-    // }
+    const res = await checkWord(input);
+    if (!res) {
+      setInput("");
+      return
+    }
 
     const colorPattern: CharacterBlock[] = [];
 
@@ -92,8 +92,6 @@ const Game = () => {
         goalLetterBank += goalWord.charAt(i)
       }
     }
-    console.log(goalLetterBank)
-    console.log(inputLetterBank)
 
     // add yellow letters
     for (let i = 0; i < inputLetterBank.length; i++) {
@@ -104,17 +102,6 @@ const Game = () => {
         goalLetterBank = goalLetterBank.substring(0, goalWordI) + " " + goalLetterBank.substring(goalWordI + 1)
       }
     }
-    console.log(colorPattern)
-
-    // compare input to goal
-    // for (let i = 0; i < 5; i++) {
-    //   const currChar = input.charAt(i);
-    //   const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.WHITE;
-    //   colorPattern.push({
-    //     letter: currChar,
-    //     color,
-    //   });
-    // }
 
     if (input === goalWord) {
       setShowPlayAgain(true);
