@@ -26,10 +26,10 @@ interface ButtonMasterProps {
 
 const ButtonMaster = styled.div<ButtonMasterProps>`
   color: white;
-  background-color: none;
+  background-color: #212121;
   padding: 8px 12px;
   outline: none;
-  border: 1px solid white;
+  border: 1px solid gray;
   border-radius: 12px;
   font-size: 18px;
   margin: 6px 0px;

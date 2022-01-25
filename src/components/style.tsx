@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const BG_COLOR = "#282a35";
+export const BG_COLOR = "#141416";
 
 export const MasterContainer = styled.div`
   padding: 16px;
