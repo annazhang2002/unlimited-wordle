@@ -6,7 +6,8 @@ import { MasterContainer, WordBox, TitleText, NavContainer, GridContainer, Repla
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 const DATAMUSE_SP_URL = "https://api.datamuse.com/words?sp=";
-const DICTIONARY_URL = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+const DICTIONARY_URL = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/";
+const DICTIONARY_KEY_URL = "?key=5c07b145-484a-4d9d-8678-ff785cd59333"
 const COLORS = {
   GREEN: "green",
   YELLOW: "yellow",
@@ -24,7 +25,15 @@ const Game = () => {
   const [inputs, setInputs] = useState<CharacterBlock[][]>([]);
   const [showPlayAgain, setShowPlayAgain] = useState<boolean>(false);
 
-  const getGoalWord = () => {
+  useEffect(() => {
+    document.addEventListener('keydown', async (event) => {
+      if (event.key === 'Enter') {
+        enterWord();
+      }
+    })
+  }, [])
+
+  const getGoalWord = async () => {
     onReset();
     let pattern = "";
     const index = Math.floor(Math.random() * 5);
@@ -33,12 +42,17 @@ const Game = () => {
       pattern += i === index ? letter : "?";
     }
 
-    Axios.get(DATAMUSE_SP_URL + pattern)
-      .then((response) => {
+    await Axios.get(DATAMUSE_SP_URL + pattern)
+      .then(async (response) => {
         const dataArr = response.data;
         const word = dataArr[Math.floor(Math.random() * dataArr.length)].word;
-        console.log(`GOAL WORD: ${word}`);
-        setGoalWord(word);
+        const isWord = await checkWord(word)
+        if (isWord) {
+          console.log(`GOAL WORD: ${word}`);
+          setGoalWord(word);
+        } else {
+          await getGoalWord()
+        }
         // !checkWord(word) && setGoalWord(word)
       })
       .catch((err) => console.log(err));
@@ -51,19 +65,47 @@ const Game = () => {
     setShowPlayAgain(false);
   };
 
-  const enterWord = () => {
+  const enterWord = async () => {
     if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
+    // if (input.length !== 5) return;
+    // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
+
+    const res = await checkWord(input);
+    if (!res) {
+      setInput("");
+      return
+    }
+
     const colorPattern: CharacterBlock[] = [];
 
-    // compare input to goal
+    var goalLetterBank = ""
+    var inputLetterBank = ""
+    // find the green letters
     for (let i = 0; i < 5; i++) {
       const currChar = input.charAt(i);
-      const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.WHITE;
       colorPattern.push({
         letter: currChar,
-        color,
+        color: COLORS.WHITE,
       });
+      if (currChar === goalWord.charAt(i)) {
+        colorPattern[i].color = COLORS.GREEN
+        inputLetterBank += " "
+        goalLetterBank += " "
+      } else {
+        inputLetterBank += currChar
+        goalLetterBank += goalWord.charAt(i)
+      }
+    }
+
+    // add yellow letters
+    for (let i = 0; i < inputLetterBank.length; i++) {
+      const currChar = inputLetterBank.charAt(i);
+      const goalWordI = goalLetterBank.indexOf(currChar);
+      if (currChar != ' ' && goalWordI !== -1) {
+        colorPattern[i].color = COLORS.YELLOW
+        goalLetterBank = goalLetterBank.substring(0, goalWordI) + " " + goalLetterBank.substring(goalWordI + 1)
+      }
     }
 
     if (input === goalWord) {
@@ -75,15 +117,17 @@ const Game = () => {
     console.log(colorPattern);
   };
 
-  const checkWord = (word: string) => {
-    Axios.get(DICTIONARY_URL + word)
-      .then((response) => {
-        const error = response.data.title != null;
-        error && console.log(`WORD ${word} DOESN'T EXIST`);
-        !error && console.log(`WORD ${word} EXISTS`);
-        return error;
-      })
-      .catch((err) => console.log(err));
+  const checkWord = async (word: string): Promise<boolean> => {
+    try {
+      const res: any = await Axios.get(DICTIONARY_URL + word + DICTIONARY_KEY_URL)
+      const isWord = res.data.length > 0 && typeof res.data[0] == 'object';
+      !isWord && console.log(`WORD ${word} DOESN'T EXIST`);
+      return isWord;
+
+    } catch (err) {
+      console.log(err);
+      return false
+    }
   };
 
   // get wordle goal word
