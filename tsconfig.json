@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
