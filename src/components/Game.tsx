@@ -25,6 +25,14 @@ const Game = () => {
   const [inputs, setInputs] = useState<CharacterBlock[][]>([]);
   const [showPlayAgain, setShowPlayAgain] = useState<boolean>(false);
 
+  useEffect(() => {
+    document.addEventListener('keydown', async (event) => {
+      if (event.key === 'Enter') {
+        enterWord();
+      }
+    })
+  }, [])
+
   const getGoalWord = () => {
     onReset();
     let pattern = "";
@@ -53,7 +61,8 @@ const Game = () => {
   };
 
   const enterWord = async () => {
-    if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
+    // if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
+    if (input.length !== 5) return;
     // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
 
