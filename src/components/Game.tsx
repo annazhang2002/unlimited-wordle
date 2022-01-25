@@ -3,7 +3,8 @@ import Axios from "axios";
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
 const DATAMUSE_SP_URL = "https://api.datamuse.com/words?sp=";
-const DICTIONARY_URL = "https://api.dictionaryapi.dev/api/v2/entries/en/";
+const DICTIONARY_URL = "https://www.dictionaryapi.com/api/v3/references/collegiate/json/";
+const DICTIONARY_KEY_URL = "?key=5c07b145-484a-4d9d-8678-ff785cd59333"
 const COLORS = {
   GREEN: "green",
   YELLOW: "yellow",
@@ -43,9 +44,16 @@ const Game = () => {
     setShowPlayAgain(false);
   };
 
-  const enterWord = (event: any) => {
+  const enterWord = async (event: any) => {
     event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
+
+    const res = await checkWord(input);
+    if (!res) {
+      setInput("");
+      return
+    }
+
     const colorPattern: any[] = [];
 
     // compare input to goal
@@ -67,15 +75,18 @@ const Game = () => {
     console.log(colorPattern);
   };
 
-  const checkWord = (word: string) => {
-    Axios.get(DICTIONARY_URL + word)
-      .then((response) => {
-        const error = response.data.title != null;
-        error && console.log(`WORD ${word} DOESN'T EXIST`);
-        !error && console.log(`WORD ${word} EXISTS`);
-        return error;
-      })
-      .catch((err) => console.log(err));
+  const checkWord = async (word: string): Promise<boolean> => {
+    try {
+      const res: any = await Axios.get(DICTIONARY_URL + word + DICTIONARY_KEY_URL)
+      const isWord = res.data.length > 0 && typeof res.data[0] == 'object';
+      !isWord && console.log(`WORD ${word} DOESN'T EXIST`);
+      isWord && console.log(`WORD ${word} EXISTS`);
+      return isWord;
+
+    } catch (err) {
+      console.log(err);
+      return false
+    }
   };
 
   // get wordle goal word
