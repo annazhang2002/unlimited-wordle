@@ -33,7 +33,7 @@ const Game = () => {
     })
   }, [])
 
-  const getGoalWord = () => {
+  const getGoalWord = async () => {
     onReset();
     let pattern = "";
     const index = Math.floor(Math.random() * 5);
@@ -42,12 +42,17 @@ const Game = () => {
       pattern += i === index ? letter : "?";
     }
 
-    Axios.get(DATAMUSE_SP_URL + pattern)
-      .then((response) => {
+    await Axios.get(DATAMUSE_SP_URL + pattern)
+      .then(async (response) => {
         const dataArr = response.data;
         const word = dataArr[Math.floor(Math.random() * dataArr.length)].word;
-        console.log(`GOAL WORD: ${word}`);
-        setGoalWord(word);
+        const isWord = await checkWord(word)
+        if (isWord) {
+          console.log(`GOAL WORD: ${word}`);
+          setGoalWord(word);
+        } else {
+          await getGoalWord()
+        }
         // !checkWord(word) && setGoalWord(word)
       })
       .catch((err) => console.log(err));
@@ -61,8 +66,8 @@ const Game = () => {
   };
 
   const enterWord = async () => {
-    // if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
-    if (input.length !== 5) return;
+    if (input.length !== 5 || !/^[a-zA-Z]+$/.test(input)) return;
+    // if (input.length !== 5) return;
     // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
 
@@ -117,7 +122,6 @@ const Game = () => {
       const res: any = await Axios.get(DICTIONARY_URL + word + DICTIONARY_KEY_URL)
       const isWord = res.data.length > 0 && typeof res.data[0] == 'object';
       !isWord && console.log(`WORD ${word} DOESN'T EXIST`);
-      isWord && console.log(`WORD ${word} EXISTS`);
       return isWord;
 
     } catch (err) {
