@@ -66,23 +66,55 @@ const Game = () => {
     // event.preventDefault();
     console.log(`SUBMITTED GUESS: ${input}`);
 
-    const res = await checkWord(input);
-    if (!res) {
-      setInput("");
-      return
-    }
+    // const res = await checkWord(input);
+    // if (!res) {
+    //   setInput("");
+    //   return
+    // }
 
     const colorPattern: CharacterBlock[] = [];
 
-    // compare input to goal
+    var goalLetterBank = ""
+    var inputLetterBank = ""
+    // find the green letters
     for (let i = 0; i < 5; i++) {
       const currChar = input.charAt(i);
-      const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.WHITE;
       colorPattern.push({
         letter: currChar,
-        color,
+        color: COLORS.WHITE,
       });
+      if (currChar === goalWord.charAt(i)) {
+        colorPattern[i].color = COLORS.GREEN
+        inputLetterBank += " "
+        goalLetterBank += " "
+      } else {
+        inputLetterBank += currChar
+        goalLetterBank += goalWord.charAt(i)
+      }
     }
+    console.log(goalLetterBank)
+    console.log(inputLetterBank)
+
+    // add yellow letters
+    for (let i = 0; i < inputLetterBank.length; i++) {
+      const currChar = inputLetterBank.charAt(i);
+      const goalWordI = goalLetterBank.indexOf(currChar);
+      if (currChar != ' ' && goalWordI !== -1) {
+        colorPattern[i].color = COLORS.YELLOW
+        goalLetterBank = goalLetterBank.substring(0, goalWordI) + " " + goalLetterBank.substring(goalWordI + 1)
+      }
+    }
+    console.log(colorPattern)
+
+    // compare input to goal
+    // for (let i = 0; i < 5; i++) {
+    //   const currChar = input.charAt(i);
+    //   const color = currChar === goalWord.charAt(i) ? COLORS.GREEN : goalWord.indexOf(currChar) !== -1 ? COLORS.YELLOW : COLORS.WHITE;
+    //   colorPattern.push({
+    //     letter: currChar,
+    //     color,
+    //   });
+    // }
 
     if (input === goalWord) {
       setShowPlayAgain(true);
